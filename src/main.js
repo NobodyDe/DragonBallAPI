@@ -4,6 +4,7 @@ const seachBarForm = document.querySelector(".searchBar");
 const input = document.querySelector("#searchInput");
 const spanNotFounded = document.querySelector(".alertNotFoundHidden");
 
+const BASE_URL = "https://dragonball-api.com/api/characters?limit=10";
 let currentPage = null;
 let NotIsSearching = true;
 let allCharacters = [];
@@ -79,9 +80,7 @@ async function fetchData(url) {
 }
 
 async function loadNextPage() {
-  const url =
-    currentPage?.links?.next ||
-    "https://dragonball-api.com/api/characters?limit=10";
+  const url = currentPage?.links?.next || BASE_URL;
   const data = await retryOperation(() => fetchData(url), 4);
   currentPage = data;
   allCharacters = [...allCharacters, ...data.items];
@@ -106,17 +105,17 @@ async function setupSearch() {
       renderCharacters(result);
       NotIsSearching = false;
     }
+
+    if (result.length === 0) {
+      spanNotFounded.setAttribute("class", "alertNotFoundDisplayed");
+    }
   });
 }
 
-async function searchCharacters(
-  character,
-  url = "https://dragonball-api.com/api/characters?limit=10"
-) {
-  const response = await fetch(url);
-  let json = await response.json();
+async function searchCharacters(character, url = BASE_URL) {
+  const fetchItems = await retryOperation(() => fetchData(url), 4);
 
-  let find = json.items.filter((u) =>
+  let find = fetchItems.items.filter((u) =>
     u.name.toLowerCase().includes(character.toLowerCase())
   );
 
@@ -124,10 +123,10 @@ async function searchCharacters(
     return find;
   }
 
-  if (json.links.next) {
-    return searchCharacters(character, (url = json.links.next));
+  if (fetchItems.links.next) {
+    return searchCharacters(character, (url = fetchItems.links.next));
   }
-  spanNotFounded.setAttribute("class", "alertNotFoundDisplayed");
+  return [];
 }
 
 function setupInfiniteScroll() {
