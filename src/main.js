@@ -130,8 +130,6 @@ async function searchCharacters(
   spanNotFounded.setAttribute("class", "alertNotFoundDisplayed");
 }
 
-console.log(currentPage?.links?.next);
-
 function setupInfiniteScroll() {
   window.addEventListener("scroll", async () => {
     if (NotIsSearching) {
@@ -140,7 +138,6 @@ function setupInfiniteScroll() {
       const alturaTotal = document.documentElement.scrollHeight;
 
       if (atualposition >= alturaTotal && currentPage?.links?.next) {
-        console.log(currentPage);
         await loadNextPage();
       }
     }
